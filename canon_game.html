@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cannon Game</title>
+    <style>
+          body {
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+          }
+          .game-container {
+            position: relative;
+            width: 900px;
+            height: 600px;
+            background-color: #87cefa;
+            border: 2px solid #000;
+            overflow: hidden;
+          }
+         
+          .cannon-left {
+            position: absolute;
+            bottom: 0;
+            width: 50px;
+            height: 50px;
+            background-color: #444;
+            left: 0;
+            border-top-right-radius: 25px;
+          }
+          .cannon-right {
+            position: absolute;
+            bottom: 0;
+            width: 50px;
+            height: 50px;
+            background-color: #444;
+            right: 0;
+            border-top-left-radius: 25px;
+          }
+          .cannon1 {
+            position: absolute;
+            width: 60px;
+            height: 20px;
+            background-color: black;
+            border-top-left-radius: 20px;
+            border-bottom-left-radius: 20px;
+            bottom: 25px;
+            left: 25px;
+            transform: rotate(-60deg);
+            transform-origin: left;
+          }
+          .cannon2 {
+            position: absolute;
+            width: 60px;
+            height: 20px;
+            background-color: black;
+            border-top-right-radius: 20px;
+            border-bottom-right-radius: 20px;
+            bottom: 25px;
+            right: 25px;
+            transform: rotate(-60deg);
+            transform-origin: right;
+          }
+          .bullet1 {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: grey;
+            border-radius: 50%;
+            bottom: 25px;
+            left: 64px;
+          }
+          .bullet2 {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: grey;
+            border-radius: 50%;
+            bottom: 25px;
+            right: 64px;
+          }
+          .player1-lives {
+            position: absolute;
+            font-size: 16px;
+            left: 20px;
+          }
+          .player2-lives {
+            position: absolute;
+            font-size: 16px;
+            right: 16px;
+           
+          }
+          .game-over {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+          }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="player1-lives">player1: <span class="edit-lives1">3</span></div>
+        <div class="player2-lives">player2: <span class="edit-lives2">3</span></div>
+        <div class="cannon-left"></div>
+        <div class="cannon-right"></div>
+        <div class="cannon1"></div>
+        <div class="cannon2"></div>
+        <div class="bullet1"></div>
+        <div class="bullet2"></div>
+        <div class="game-over"><span class="end-result"></span></div>
+    </div>
+    <script>
+        const cannonLeft = document.querySelector(".cannon-left");
+        const cannonRight = document.querySelector(".cannon-right");
+        const cannon1Barrel = document.querySelector(".cannon1");
+        const cannon2Barrel = document.querySelector(".cannon2");
+        const Bullet1 = document.querySelector(".bullet1");
+        const Bullet2 = document.querySelector(".bullet2");
+        const player1LivesEle = document.querySelector(".edit-lives1");
+        const player2LivesEle = document.querySelector(".edit-lives2");
+        const endResult = document.querySelector(".end-result");
+        let rotationAngle = 0;
+        const rotationSpeed = 10;
+        let rotationAngle2 = 0;
+        let rotateUp = false;
+        let rotateDown = false;
+        let rotateUp2 = false;
+        let rotateDown2 = false;
+        let bulletFiring1 = false;
+        let bulletFiring2 = false;
+        const xSpeed1 = 80;
+        const ySpeed1 = 80;
+        const xSpeed2 = 80;
+        const ySpeed2 = 80;
+        var t1 = 0;
+        var t2 = 0;
+        let moveUp1 = false;
+        let moveDown1 = false;
+        let moveUp2 = false;
+        let moveDown2 = false;
+        let cannonUp1 = false;
+        let cannonDown1 = false;
+        let cannonUp2 = false;
+        let cannonDown2 = false;
+        let cannonPos1 = 0;
+        let cannonPos2 = 0;
+        let currentx1 = 25;
+        let currentx2 = 25;
+        let playerLives1 = 3;
+        let playerLives2 = 3;
+        let player1Shot = false;
+        let player2Shot = false;
+        const opacitys = ['0.8', '0.6', '0.4', '0.2', '0.4', '0.6', '0.8', '1'];
+
+
+        function rotateCannonBarrel() {
+            cannon1Barrel.style.transform = `rotate(${rotationAngle}deg)`;
+ 
+        }
+        function rotateCannonBarrel2() {
+            cannon2Barrel.style.transform = `rotate(${rotationAngle2}deg)`;
+        }
+        function moveCannon1() {
+            cannonLeft.style.bottom = cannonPos1 + "px";
+            cannon1Barrel.style.bottom = 25 + cannonPos1 + "px";
+        }
+        function moveCannon2() {
+            cannonRight.style.bottom = cannonPos2 + "px";
+            cannon2Barrel.style.bottom = 25 + cannonPos2 + "px";
+        }
+
+
+        function rotateContinuously1() {
+            if (rotateUp) {
+                rotationAngle -= rotationSpeed;
+            }
+            else if (rotateDown) {
+                rotationAngle += rotationSpeed;
+            }
+            rotateCannonBarrel();
+        }
+        function rotateContinuously2() {
+            if (rotateUp2) {
+                rotationAngle2 += rotationSpeed;
+            }
+            else if (rotateDown2) {
+                rotationAngle2 -= rotationSpeed;
+            }
+            rotateCannonBarrel2();
+        }
+
+
+        document.addEventListener('keydown', (event) => {
+            const key = event.key.toLowerCase();
+            if (key === 'w') {
+                rotateUp = true;
+                console.log('w');
+            }
+            else if (key === 's') {
+                rotateDown = true;
+            }
+            if (key === 'i') {
+                rotateUp2 = true;
+                console.log('w');
+            }
+            else if (key === 'k') {
+                rotateDown2 = true;
+            }
+        });
+
+
+        document.addEventListener('keyup', (event) => {
+            const key = event.key.toLowerCase();
+            if (key === 'w') {
+                rotateUp = false;
+            }
+            else if (key === 's') {
+                rotateDown = false;
+            }
+            if (key === 'i') {
+                rotateUp2 = false;
+            }
+            else if (key === 'k') {
+                rotateDown2 = false;
+            }
+        });
+        document.addEventListener('keydown', (event) => {
+            const key = event.key.toLowerCase();
+            if (!bulletFiring1) {
+            if (key === 'd') {
+                console.log('d');
+                bulletFiring1 = true;
+            }
+            if (!bulletFiring2) {
+                if (key === 'j') {
+                    console.log('j');
+                    bulletFiring2 = true;
+                }
+            }
+        }
+        })
+        document.addEventListener('keydown', (event) => {
+            const key = event.key.toLowerCase();
+            if (!moveUp1) {
+                if (key === 'q') {
+                    cannonUp1 = true;
+                }
+            }
+            if (!moveDown1) {
+                if (key === 'a') {
+                    cannonDown1 = true;
+                }
+            }
+            if (!moveUp2) {
+                if (key === 'o') {
+                    cannonUp2 = true;
+                }
+            if (!moveDown2) {
+                if (key === 'l') {
+                    cannonDown2 = true;
+                }
+            }
+        }
+        });
+        document.addEventListener('keyup', (event) => {
+            const key = event.key.toLowerCase();
+            if (key === 'q') {
+                cannonUp1 = false;
+            }
+            else if (key === 'a') {
+                cannonDown1 = false;
+            }
+            else if (key === 'o') {
+                cannonUp2 = false;
+            }
+            else if (key === 'l') {
+                cannonDown2 = false;
+            }
+        });
+        function fireBall1() {
+  if (bulletFiring1) {
+    const angleRadians = (rotationAngle * Math.PI) / 180;
+    var x1 = 25 + 60 * Math.cos(angleRadians) - 10;
+    var y1 = currentx1 - 60 * Math.sin(angleRadians);
+    var xNew = x1 + xSpeed1 * t1 * Math.cos(angleRadians) - 2 * t1;
+    var yNew = y1 + ySpeed1 * t1 * Math.sin(-angleRadians) - 0.5 * 9.81 * t1 ** 2;
+
+
+    // Check if the projectile is still within the visible area
+    if (
+      parseInt(xNew) <= 900 &&
+      parseInt(xNew) >= 0 &&
+      parseInt(yNew) <= 600 &&
+      parseInt(yNew) >= 0
+    ) {
+      Bullet1.style.left = xNew + "px";
+      Bullet1.style.bottom = yNew + "px";
+      t1 += 0.5;
+      console.log(xNew, yNew);
+    } else {
+        console.log('out of bounds');
+      // If the projectile is out of bounds, stop firing and reset
+      t1 = 0;
+      Bullet1.style.left = "25px"; // Set initial position for the next shot
+      Bullet1.style.bottom = currentx1 + "px"; // Set initial position for the next shot
+      console.log(xNew, yNew);
+      bulletFiring1 = false;
+    }
+  }
+}
+        function fireBall2() {
+            if (bulletFiring2) {
+                const angleRadians2 = (rotationAngle2*Math.PI) / 180;
+                var x2 = 25 + 60*Math.cos(angleRadians2) - 10;
+                var y2 = currentx2 - 60*Math.sin(-angleRadians2);
+                var xNew2 = x2 + xSpeed2*t2*Math.cos(angleRadians2) - 2*(t2);
+                var yNew2 = y2 + ySpeed2*t2*Math.sin(angleRadians2) - 0.5*(9.81)*(t2)**2;
+            if (
+      parseInt(xNew2) <= 900 &&
+      parseInt(xNew2) >= 0 &&
+      parseInt(yNew2) <= 600 &&
+      parseInt(yNew2) >= 0
+    ) {
+                t2 += 0.5;
+                Bullet2.style.right = xNew2 + "px";
+                Bullet2.style.bottom = yNew2 + "px";
+            }
+            else {
+                t2 = 0;
+      Bullet2.style.right = "25px"; // Set initial position for the next shot
+      Bullet2.style.bottom = currentx2 + "px"; // Set initial position for the next shot
+      console.log(xNew2, yNew2);
+      bulletFiring2 = false;
+            }
+        }
+    }
+        function delayReload() {
+            bulletFiring1 = false;
+            const angleRadians2 = (rotationAngle*Math.PI) / 180;
+            var x1 = 25 + 60*Math.cos(angleRadians) - 10;
+            var y1 = currentx1 - 60*Math.sin(-angleRadian2);
+        }
+        function delayReload2() {
+            bulletFiring2 = false;
+        }
+        function cannonMove1() {
+           
+            if (cannonUp1 && cannonPos1 <= 560) {
+                  cannonPos1 += 10;
+                  currentx1 += 10;
+                  console.log('mmmm');
+            }
+            else if (cannonDown1 && cannonPos1 >= 10) {
+                console.log('kkkk');
+                cannonPos1 -= 10;
+                currentx1 -= 10;
+            }
+            moveCannon1();
+           
+           
+        }
+        function cannonMove2() {
+            if (cannonUp2 && cannonPos2 <= 560) {
+                cannonPos2 += 10;
+                currentx2 += 10;
+            }
+            else if (cannonDown2 && cannonPos2 >= 10) {
+               cannonPos2 -= 10;
+               currentx2 -= 10;
+               console.log(currentx2);
+            }
+            moveCannon2();
+        }
+
+
+        function collision() {
+            console.log(parseInt(cannon2Barrel.style.bottom));
+            if (parseInt(Bullet1.style.left) >= 830 &&
+            parseInt(cannonRight.style.bottom) - parseInt(Bullet1.style.bottom) < 60 && parseInt(cannonRight.style.bottom) - parseInt(Bullet1.style.bottom) > -60) {
+               
+                console.log('player2 hit');
+                if (playerLives2 > 0) {
+                    playerLives2 -= 1;
+                    player2LivesEle.textContent = playerLives2;
+                    player2Shot = true;
+                }
+                else {
+                    gameOver();
+                }
+            }
+            if (900 - parseInt(Bullet2.style.right) <= 70 &&
+            parseInt(cannonLeft.style.bottom) - parseInt(Bullet2.style.bottom) < 60 && parseInt(cannonLeft.style.bottom) > -60) {
+                console.log('player1 hit');
+                if (playerLives1 > 0) {
+                    playerLives1 -= 1;
+                    player1LivesEle.textContent = playerLives1;
+                    player1Shot = true;
+                    console.log('player1hit:', player1Shot);
+                }
+                else {
+                    gameOver();
+                }
+            }
+        }
+        let checkCount1 = 0;
+        let checkCount2 = 0;
+        let i = 0;
+        let j = 0;
+        function player1Hit() {
+             if (player1Shot && i < opacitys.length) {
+                console.log('it on');
+                if (checkCount1 % 1 == 0) {
+                cannonLeft.style.opacity = opacitys[i];
+                i += 1;
+                };
+                checkCount1 += 1;
+             }
+             else {
+             player1Shot = false;
+             i = 0;
+             checkCount1 = 0;
+             cannonLeft.style.opacity = '1';
+             console.log('false');
+             console.log('important:', player1Shot);
+             }
+        }
+        function player2Hit() {
+            if (player2Shot && j < opacitys.length) {
+                console.log('it on2');
+                if (checkCount2 % 1 == 0) {
+                cannonRight.style.opacity = opacitys[j];
+                j += 1;
+                };
+                checkCount2 += 1;
+             }
+             else {
+             player2Shot = false;
+             j = 0;
+             checkCount2 = 0;
+             cannonRight.style.opacity = '1';
+             console.log('false');
+             console.log('important:', player2Shot);
+             }
+        }
+   
+        function gameOver() {
+            if (playerLives1 == 0) {
+                cannon1Barrel.style.opacity = '0';
+                cannonLeft.style.opacity = '0';
+                endResult.textContent = 'Player2 wins';
+            }
+            else if (playerLives2 == 0) {
+                cannon2Barrel.style.opacity = '0';
+                cannonRight.style.opacity = '0';
+                endResult.textContent = 'Player1 wins';
+            }
+        }
+       
+        setInterval(rotateContinuously1, 100);
+        setInterval(rotateContinuously2, 100);
+        setInterval(fireBall1, 100);
+        setInterval(fireBall2, 100);
+        setInterval(cannonMove1, 100);
+        setInterval(cannonMove2, 100);
+        setInterval(collision, 100);
+        setInterval(player1Hit, 100);
+        setInterval(player2Hit, 100);
+        //setInterval(delayReload, 100);
+    </script>
+</body>
+</html>
+
